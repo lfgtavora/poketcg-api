@@ -1,0 +1,17 @@
+.git
+.github
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+target
+data
+HELP.md
+README.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+.gitignore
+**/.DS_Store
+**/Thumbs.db

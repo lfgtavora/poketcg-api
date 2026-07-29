@@ -62,8 +62,9 @@ class ApiContractTests {
         card.setSubtypes("Stage 2");
         card.setTypes("Psychic");
         card.setUpdatedAt("2025/07/25 23:00:00");
+        card.setNumber("1");
         card.setRawJson("""
-                {"id":"base1-1","name":"Alakazam","set":{"id":"base1"},"images":{"small":"https://images.pokemontcg.io/base1/1.png","large":"https://images.pokemontcg.io/base1/1_hires.png"}}
+                {"id":"base1-1","name":"Alakazam","supertype":"Pokemon","number":"1","rarity":"Holo Rare","set":{"id":"base1"},"images":{"small":"https://images.pokemontcg.io/base1/1.png","large":"https://images.pokemontcg.io/base1/1_hires.png"}}
                 """);
         card.setSyncedAt(Instant.now());
         cardRepository.save(card);
@@ -91,6 +92,39 @@ class ApiContractTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("base1"))
                 .andExpect(jsonPath("$.data.name").value("Base"));
+    }
+
+    @Test
+    void shouldSelectCardFields() throws Exception {
+        mockMvc.perform(get("/v2/cards")
+                        .queryParam("q", "set.id:base1")
+                        .queryParam("select", "id,name,images,number,supertype,set"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value("base1-1"))
+                .andExpect(jsonPath("$.data[0].name").value("Alakazam"))
+                .andExpect(jsonPath("$.data[0].number").value("1"))
+                .andExpect(jsonPath("$.data[0].supertype").value("Pokemon"))
+                .andExpect(jsonPath("$.data[0].set.id").value("base1"))
+                .andExpect(jsonPath("$.data[0].images.small").value("https://images.pokemontcg.io/base1/1.png"))
+                .andExpect(jsonPath("$.data[0].rarity").doesNotExist());
+
+        mockMvc.perform(get("/v2/cards/base1-1").queryParam("select", "id,name"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value("base1-1"))
+                .andExpect(jsonPath("$.data.name").value("Alakazam"))
+                .andExpect(jsonPath("$.data.set").doesNotExist())
+                .andExpect(jsonPath("$.data.images").doesNotExist());
+    }
+
+    @Test
+    void shouldSelectSetFields() throws Exception {
+        mockMvc.perform(get("/v2/sets").queryParam("select", "id,name,images"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value("base1"))
+                .andExpect(jsonPath("$.data[0].name").value("Base"))
+                .andExpect(jsonPath("$.data[0].images.symbol").value("https://images.pokemontcg.io/base1/symbol.png"))
+                .andExpect(jsonPath("$.data[0].series").doesNotExist())
+                .andExpect(jsonPath("$.data[0].printedTotal").doesNotExist());
     }
 
     @Test

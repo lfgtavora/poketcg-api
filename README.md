@@ -172,6 +172,7 @@ Busca case-insensitive no nome com match literal (contains/prefix) e fuzzy (Leve
 | `page` | `1` | Página (mínimo 1) |
 | `pageSize` | `250` | Itens por página (1–250) |
 | `orderBy` | `id` asc | Campo de ordenação; prefixo `-` = DESC |
+| `select` | — | Campos top-level a retornar, separados por vírgula (ex: `id,name,images,set`) |
 
 ## Sintaxe do `q`
 
@@ -208,8 +209,12 @@ curl "http://localhost:8080/v2/cards?q=name:Alakazam&page=1&pageSize=10"
 # Cards de um set
 curl "http://localhost:8080/v2/cards?q=set.id:base1&orderBy=number"
 
+# Só campos necessários
+curl "http://localhost:8080/v2/cards?q=set.id:base1&select=id,name,images,number,supertype,set&orderBy=number"
+
 # Card por ID
 curl "http://localhost:8080/v2/cards/base1-1"
+curl "http://localhost:8080/v2/cards/base1-1?select=id,name,images"
 
 # Sets de uma série, mais recentes primeiro
 curl "http://localhost:8080/v2/sets?q=series:Base&orderBy=-releaseDate"

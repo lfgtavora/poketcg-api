@@ -27,13 +27,16 @@ public class SetsController {
             @RequestParam(name = "q", required = false) String q,
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "pageSize", defaultValue = "250") int pageSize,
-            @RequestParam(name = "orderBy", required = false) String orderBy) {
-        return setReadService.searchSets(q, page, pageSize, orderBy);
+            @RequestParam(name = "orderBy", required = false) String orderBy,
+            @RequestParam(name = "select", required = false) String select) {
+        return setReadService.searchSets(q, page, pageSize, orderBy, select);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SingleApiResponse<JsonNode>> getById(@PathVariable("id") String id) {
-        return setReadService.findById(id)
+    public ResponseEntity<SingleApiResponse<JsonNode>> getById(
+            @PathVariable("id") String id,
+            @RequestParam(name = "select", required = false) String select) {
+        return setReadService.findById(id, select)
                 .map(set -> ResponseEntity.ok(new SingleApiResponse<>(set)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

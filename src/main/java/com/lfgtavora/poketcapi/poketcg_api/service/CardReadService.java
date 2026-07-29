@@ -33,19 +33,22 @@ public class CardReadService {
         this.objectMapper = objectMapper;
     }
 
-    public PagedApiResponse<JsonNode> searchCards(String q, int page, int pageSize, String orderBy) {
+    public PagedApiResponse<JsonNode> searchCards(String q, int page, int pageSize, String orderBy, String select) {
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);
         PageRequest request = PageRequest.of(safePage - 1, safePageSize, buildSort(orderBy));
         Specification<CardEntity> spec = buildSpecification(q);
         Page<CardEntity> result = cardRepository.findAll(spec, request);
 
-        List<JsonNode> data = result.getContent().stream().map(this::readRawJson).toList();
+        List<JsonNode> data = result.getContent().stream()
+                .map(card -> FieldSelector.apply(readRawJson(card), select, objectMapper))
+                .toList();
         return new PagedApiResponse<>(data, safePage, safePageSize, data.size(), result.getTotalElements());
     }
 
-    public Optional<JsonNode> findById(String id) {
-        return cardRepository.findById(id).map(this::readRawJson);
+    public Optional<JsonNode> findById(String id, String select) {
+        return cardRepository.findById(id)
+                .map(card -> FieldSelector.apply(readRawJson(card), select, objectMapper));
     }
 
     private JsonNode readRawJson(CardEntity cardEntity) {

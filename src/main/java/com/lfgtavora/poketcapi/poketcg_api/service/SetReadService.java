@@ -33,19 +33,22 @@ public class SetReadService {
         this.objectMapper = objectMapper;
     }
 
-    public PagedApiResponse<JsonNode> searchSets(String q, int page, int pageSize, String orderBy) {
+    public PagedApiResponse<JsonNode> searchSets(String q, int page, int pageSize, String orderBy, String select) {
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), MAX_PAGE_SIZE);
         PageRequest request = PageRequest.of(safePage - 1, safePageSize, buildSort(orderBy));
         Specification<SetEntity> spec = buildSpecification(q);
         Page<SetEntity> result = setRepository.findAll(spec, request);
 
-        List<JsonNode> data = result.getContent().stream().map(this::readRawJson).toList();
+        List<JsonNode> data = result.getContent().stream()
+                .map(set -> FieldSelector.apply(readRawJson(set), select, objectMapper))
+                .toList();
         return new PagedApiResponse<>(data, safePage, safePageSize, data.size(), result.getTotalElements());
     }
 
-    public Optional<JsonNode> findById(String id) {
-        return setRepository.findById(id).map(this::readRawJson);
+    public Optional<JsonNode> findById(String id, String select) {
+        return setRepository.findById(id)
+                .map(set -> FieldSelector.apply(readRawJson(set), select, objectMapper));
     }
 
     private JsonNode readRawJson(SetEntity setEntity) {

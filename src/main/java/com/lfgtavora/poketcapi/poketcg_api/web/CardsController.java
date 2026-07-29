@@ -27,13 +27,16 @@ public class CardsController {
             @RequestParam(name = "q", required = false) String q,
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "pageSize", defaultValue = "250") int pageSize,
-            @RequestParam(name = "orderBy", required = false) String orderBy) {
-        return cardReadService.searchCards(q, page, pageSize, orderBy);
+            @RequestParam(name = "orderBy", required = false) String orderBy,
+            @RequestParam(name = "select", required = false) String select) {
+        return cardReadService.searchCards(q, page, pageSize, orderBy, select);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SingleApiResponse<JsonNode>> getById(@PathVariable("id") String id) {
-        return cardReadService.findById(id)
+    public ResponseEntity<SingleApiResponse<JsonNode>> getById(
+            @PathVariable("id") String id,
+            @RequestParam(name = "select", required = false) String select) {
+        return cardReadService.findById(id, select)
                 .map(card -> ResponseEntity.ok(new SingleApiResponse<>(card)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
